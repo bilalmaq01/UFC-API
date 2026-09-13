@@ -1,0 +1,9 @@
+# Development / testing dependencies — NOT needed to run the API in production.
+# Install with:  pip install -r requirements.txt -r requirements-dev.txt
+
+-r requirements.txt
+
+httpx2  # HTTP client that fastapi/starlette's TestClient runs on top of.
+        # Only needed if you write tests using TestClient. Unpinned because it
+        # isn't installed yet — pin the exact version after the first install
+        # (run: pip freeze | grep -i httpx2) so this stays reproducible.

@@ -1,0 +1,10 @@
+# Runtime dependencies — everything needed to actually serve the API.
+# Pinned to the exact versions currently installed and verified working together.
+
+fastapi==0.141.1          # web framework: routing, request/response, OpenAPI docs
+uvicorn==0.52.4           # ASGI server that actually runs the app (uvicorn app.main:app)
+pydantic==2.13.5          # data validation; used directly by our FighterOut schema
+pydantic-settings==2.15.0 # loads Settings from the .env file (config.py)
+SQLAlchemy==2.0.52        # ORM + query builder for the Supabase Postgres tables
+psycopg==3.3.5            # Postgres driver; required by the postgresql+psycopg:// URL
+rapidfuzz==3.14.6         # fuzzy string matching for /fighters/search
