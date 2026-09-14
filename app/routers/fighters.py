@@ -1,6 +1,7 @@
 """HTTP endpoints for fighters: fuzzy search, list, and detail."""
 
 import time
+from typing import Final
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from rapidfuzz import fuzz, process
@@ -14,7 +15,7 @@ from app.schemas.fighter import FighterComparison, FighterOut
 router = APIRouter(prefix="/fighters", tags=["fighters"])
 
 
-_CACHE_TTL_SECONDS = 3600  # one hour
+_CACHE_TTL_SECONDS: Final = 3600  # one hour
 
 _fighters_cache: list[Fighter] | None = None
 _names_cache: list[str] | None = None
@@ -22,14 +23,12 @@ _cache_built_at: float = 0.0
 
 
 def _get_search_index(db: Session) -> tuple[list[Fighter], list[str]]:
-
     global _fighters_cache, _names_cache, _cache_built_at
 
     age = time.monotonic() - _cache_built_at
     if _fighters_cache is None or age > _CACHE_TTL_SECONDS:
-        fighters = db.execute(select(Fighter).where(Fighter.name != "")).scalars().all()
-        _fighters_cache = list(fighters)
-        _names_cache = [f.name.lower() for f in _fighters_cache]
+        _fighters_cache = db.scalars(select(Fighter).where(Fighter.name != "")).all()
+        _names_cache = [fighter.name.casefold() for fighter in _fighters_cache]
         _cache_built_at = time.monotonic()
 
     return _fighters_cache, _names_cache
@@ -42,17 +41,29 @@ def search_fighters(
     db: Session = Depends(get_db),
 ):
     fighters, names = _get_search_index(db)
-    matches = process.extract(q.lower(), names, scorer=fuzz.WRatio, score_cutoff=67, limit=limit)
+    matches = process.extract(q.casefold(), names, scorer=fuzz.WRatio, score_cutoff=67, limit=limit)
     return [fighters[i] for _, _, i in matches]
 
 
 # --- Two-fighter comparison -----------------------------------------------
 
-_HIGHER_IS_BETTER = ("slpm", "str_acc", "str_def", "td_avg", "td_acc", "td_def", "sub_avg")
-_LOWER_IS_BETTER = ("sapm",)
+_STAT_DIRECTIONS: Final = {
+    "slpm": True,
+    "str_acc": True,
+    "str_def": True,
+    "td_avg": True,
+    "td_acc": True,
+    "td_def": True,
+    "sub_avg": True,
+    "sapm": False,
+}
 
 
-def _winner(a_val, b_val, higher_wins: bool) -> str | None:
+def _winner(
+    a_val: int | float | None,
+    b_val: int | float | None,
+    higher_wins: bool,
+) -> str | None:
     """Decide one stat: 'a', 'b', 'draw', or None when it can't be compared."""
     if a_val is None or b_val is None:
         return None  # missing data on either side -> not comparable
@@ -64,12 +75,10 @@ def _winner(a_val, b_val, higher_wins: bool) -> str | None:
 
 def _stat_winners(a: Fighter, b: Fighter) -> dict[str, str | None]:
     """Build the per-stat winner map for two fighters."""
-    winners: dict[str, str | None] = {}
-    for stat in _HIGHER_IS_BETTER:
-        winners[stat] = _winner(getattr(a, stat), getattr(b, stat), higher_wins=True)
-    for stat in _LOWER_IS_BETTER:
-        winners[stat] = _winner(getattr(a, stat), getattr(b, stat), higher_wins=False)
-    return winners
+    return {
+        stat: _winner(getattr(a, stat), getattr(b, stat), higher_wins=higher_wins)
+        for stat, higher_wins in _STAT_DIRECTIONS.items()
+    }
 
 
 @router.get("/compare", response_model=FighterComparison)
