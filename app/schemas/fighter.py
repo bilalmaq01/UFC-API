@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
@@ -26,3 +27,16 @@ class FighterOut(BaseModel):
     td_acc: int | None = None
     td_def: int | None = None
     sub_avg: float | None = None
+
+
+class FighterComparison(BaseModel):
+    """Two fighters plus a per-stat verdict of who wins.
+
+    comparison maps each career stat to the winner: "a", "b", "draw", or null
+    when the stat can't be compared (one side's value is missing).
+    """
+
+    a: FighterOut
+    b: FighterOut
+    comparison: dict[str, Literal["a", "b", "draw"] | None]
+
