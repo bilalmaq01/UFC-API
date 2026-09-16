@@ -41,7 +41,7 @@ def search_fighters(
     db: Session = Depends(get_db),
 ):
     fighters, names = _get_search_index(db)
-    matches = process.extract(q.casefold(), names, scorer=fuzz.WRatio, score_cutoff=67, limit=limit)
+    matches = process.extract(q.casefold(), names, scorer=fuzz.partial_ratio, score_cutoff=67, limit=limit)
     return [fighters[i] for _, _, i in matches]
 
 
