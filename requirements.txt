@@ -8,3 +8,4 @@ pydantic-settings==2.15.0 # loads Settings from the .env file (config.py)
 SQLAlchemy==2.0.52        # ORM + query builder for the Supabase Postgres tables
 psycopg==3.3.5            # Postgres driver; required by the postgresql+psycopg:// URL
 rapidfuzz==3.14.6         # fuzzy string matching for /fighters/search
+mangum==0.19.0            # ASGI->AWS Lambda adapter; only used by the Lambda container

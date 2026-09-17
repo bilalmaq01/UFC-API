@@ -1,0 +1,13 @@
+# Keep the Lambda image small and free of local-only junk. We only COPY
+# requirements.txt and app/ anyway, but this stops Docker from sending the rest
+# of the repo to the build daemon as context.
+.venv/
+.git/
+.idea/
+.pytest_cache/
+frontend/
+terraform/
+.env
+*.md
+__pycache__/
+*.pyc

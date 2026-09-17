@@ -92,7 +92,11 @@ def compare_fighters(
     missing = [str(i) for i, f in ((a, fighter_a), (b, fighter_b)) if f is None]
     if missing:
         raise HTTPException(status_code=404, detail=f"Fighter(s) not found: {', '.join(missing)}")
-    return {"a": fighter_a, "b": fighter_b, "comparison": _stat_winners(fighter_a, fighter_b)}
+    return {
+        "a": fighter_a,
+        "b": fighter_b,
+        "comparison": _stat_winners(fighter_a, fighter_b),
+    }
 
 
 @router.get("", response_model=list[FighterOut])

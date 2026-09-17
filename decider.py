@@ -1,22 +1,12 @@
-"""Random decision oracle.
-
-Rolls a number from 1 to 100, using 50 as the midpoint, and reports which
-side it landed on. We map the two choices to HIGHER / LOWER beforehand, roll,
-and let the number decide.
-
-  - roll >  50  -> HIGHER
-  - roll <  50  -> LOWER
-  - roll == 50  -> dead center, re-roll
-
-Usage:
-    python decider.py
+"""
+I say higher or lower when i want to make an important decision in the decision making of this project but cant decide
 """
 
 import random
 
 
 def roll() -> int:
-    """Return a random integer from 1 to 100 (both ends included)."""
+
     return random.randint(1, 100)
 
 

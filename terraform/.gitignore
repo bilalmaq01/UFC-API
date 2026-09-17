@@ -1,0 +1,9 @@
+# Never commit secrets or state — tfvars holds your DB URL, and state holds it
+# too (plus every other resource attribute).
+*.tfvars
+!*.tfvars.example
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# DO commit .terraform.lock.hcl — it pins provider versions for reproducibility.

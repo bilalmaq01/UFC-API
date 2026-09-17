@@ -1,0 +1,8 @@
+# Copy this file to `terraform.tfvars` (which is gitignored) and fill in the
+# real value. terraform.tfvars is read automatically on every plan/apply.
+
+database_url = "postgresql://USER:PASSWORD@HOST:5432/DBNAME"
+
+# Optional overrides:
+# region       = "us-east-1"
+# cors_origins = ["https://your-cloudfront-domain.cloudfront.net"]
