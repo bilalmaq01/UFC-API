@@ -10,6 +10,9 @@
 .env
 .env.*
 !.env.example
+# Exception: frontend build config holds only the PUBLIC API URL (not a secret)
+# and is needed to reproduce the production build, so it's tracked.
+!frontend/.env.production
 
 # Go build/test output
 bin/

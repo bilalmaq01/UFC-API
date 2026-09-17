@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { API_BASE } from './config'
 
 // Exported so App (and later the comparison view) can share this shape.
 export type Fighter = {
@@ -27,7 +28,7 @@ function SearchBox({ label, onSelect }: SearchBoxProps) {
     }
 
     async function search() {
-      const url = `http://localhost:8000/fighters/search?q=${encodeURIComponent(query)}`
+      const url = `${API_BASE}/fighters/search?q=${encodeURIComponent(query)}`
       const response = await fetch(url)
       const fighters: Fighter[] = await response.json()
       setResults(fighters)

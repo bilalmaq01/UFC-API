@@ -36,7 +36,7 @@ ECR="$ACCOUNT.dkr.ecr.$REGION.amazonaws.com/ufcapi-api"
 aws ecr get-login-password --region $REGION \
   | docker login --username AWS --password-stdin "$ACCOUNT.dkr.ecr.$REGION.amazonaws.com"
 
-docker build --platform linux/arm64 -t ufcapi-api .
+docker build --platform linux/arm64 --provenance=false -t ufcapi-api .
 docker tag ufcapi-api:latest "$ECR:latest"
 docker push "$ECR:latest"
 ```
@@ -57,11 +57,47 @@ curl "$(tofu output -raw api_base_url)/health"
 curl "$(tofu output -raw api_base_url)/fighters/search?q=jones"
 ```
 
-## Redeploying after a code change
+## Redeploying the API after a code change
 
 ```sh
-docker build --platform linux/arm64 -t ufcapi-api . && docker tag ufcapi-api:latest "$ECR:latest" && docker push "$ECR:latest"
+docker build --platform linux/arm64 --provenance=false -t ufcapi-api . && docker tag ufcapi-api:latest "$ECR:latest" && docker push "$ECR:latest"
 aws lambda update-function-code --function-name ufcapi-api --image-uri "$ECR:latest" --region us-west-2
+```
+
+# Deploying the frontend (Step 4)
+
+The frontend is static files (S3) served worldwide over HTTPS (CloudFront).
+`terraform/frontend.tf` creates a **private** bucket that only CloudFront can
+read (via Origin Access Control).
+
+The API URL the frontend calls is set in `frontend/.env.production` and baked
+in at build time — if the API URL ever changes, rebuild (don't just re-upload).
+
+## First deploy
+
+```sh
+cd terraform && tofu apply          # creates the S3 bucket + CloudFront (~3-5 min)
+
+cd ../frontend
+npm run build                       # -> dist/, with the live API URL inlined
+aws s3 sync dist/ "s3://$(cd ../terraform && tofu output -raw frontend_bucket)" --delete
+```
+
+Open the site:
+
+```sh
+cd terraform && tofu output -raw cloudfront_url
+```
+
+## Redeploying the frontend after a change
+
+```sh
+cd frontend && npm run build
+aws s3 sync dist/ "s3://$(cd ../terraform && tofu output -raw frontend_bucket)" --delete
+# CloudFront caches aggressively; invalidate so users get the new files now:
+aws cloudfront create-invalidation \
+  --distribution-id "$(cd ../terraform && tofu output -raw cloudfront_distribution_id)" \
+  --paths "/*"
 ```
 
 ## Tear it all down

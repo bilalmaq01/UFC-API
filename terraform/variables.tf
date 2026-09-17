@@ -30,3 +30,14 @@ variable "cors_origins" {
   type        = list(string)
   default     = ["*"]
 }
+
+variable "alert_email" {
+  description = "Email address that receives the AWS budget alerts."
+  type        = string
+}
+
+variable "monthly_budget_usd" {
+  description = "Monthly spend ceiling (USD) for budget alerts. ALERTS ONLY — AWS does not hard-stop spending at this number."
+  type        = number
+  default     = 5
+}

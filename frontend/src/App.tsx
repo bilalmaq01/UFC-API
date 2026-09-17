@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import SearchBox, { type Fighter } from './SearchBox'
+import { API_BASE } from './config'
 
 // The 8 career stats we compare, in display order + labels. Direction (e.g.
 // sapm is "lower is better") is decided by the backend, so the frontend never
@@ -59,7 +60,7 @@ function App() {
     }
 
     async function compare() {
-      const url = `http://localhost:8000/fighters/compare?a=${fighterA!.id}&b=${fighterB!.id}`
+      const url = `${API_BASE}/fighters/compare?a=${fighterA!.id}&b=${fighterB!.id}`
       const response = await fetch(url)
       const data: Comparison = await response.json()
       setComparison(data)

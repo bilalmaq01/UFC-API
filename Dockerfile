@@ -7,10 +7,10 @@
 # Python 3.13 is Lambda's newest supported runtime (local dev may be on 3.14;
 # that's fine, the deps all have 3.13 wheels).
 #
-# --platform=linux/arm64 pins the image to arm64 so it always matches the
-# Lambda's `architectures = ["arm64"]`, no matter what machine builds it. If
-# these two ever disagree, the function fails to start.
-FROM --platform=linux/arm64 public.ecr.aws/lambda/python:3.13
+# The build MUST target arm64 to match the Lambda's `architectures = ["arm64"]`.
+# We set that on the build command (`docker build --platform linux/arm64 ...`)
+# rather than hardcoding it here, which is the Docker-recommended approach.
+FROM public.ecr.aws/lambda/python:3.13
 
 # LAMBDA_TASK_ROOT is /var/task — where Lambda looks for your code and deps.
 COPY requirements.txt ${LAMBDA_TASK_ROOT}/
